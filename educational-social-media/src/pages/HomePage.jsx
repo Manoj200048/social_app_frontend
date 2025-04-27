@@ -37,7 +37,7 @@ const HomePage = () => {
     if (activeCategory === 'all') return true;
     if (activeCategory === 'code') return post.content.includes('```');
     
-    // For demo purposes, let's use some basic filtering
+    // For demo purposes
     if (activeCategory === 'tutorials') {
       return post.content.toLowerCase().includes('tutorial') || 
              post.content.toLowerCase().includes('guide') ||
