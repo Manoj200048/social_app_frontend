@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaThumbsUp, FaThumbsDown, FaComment, FaCode, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaThumbsUp, FaThumbsDown, FaComment, FaCode, FaTrash, FaEdit, FaImage, FaVideo } from 'react-icons/fa';
 import api from '../services/api';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -78,6 +78,36 @@ const PostCard = ({ post, refreshPosts }) => {
     });
   };
 
+  const renderMediaContent = () => {
+    if (!post.contentUrl) return null;
+    
+    if (post.postType === 'PHOTO') {
+      return (
+        <div className="media-content">
+          <img 
+            src={post.contentUrl} 
+            alt="Post" 
+            className="post-media"
+          />
+        </div>
+      );
+    } else if (post.postType === 'VIDEO') {
+      return (
+        <div className="media-content">
+          <video 
+            controls 
+            className="post-media"
+          >
+            <source src={post.contentUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <div className="card post-card">
       <div className="post-header">
@@ -115,6 +145,7 @@ const PostCard = ({ post, refreshPosts }) => {
           </div>
         ) : (
           <>
+            {renderMediaContent()}
             <div className={`content ${expanded ? 'expanded' : ''}`}>
               {formatContent(post.content)}
             </div>
@@ -143,11 +174,23 @@ const PostCard = ({ post, refreshPosts }) => {
           </Link>
         </div>
         
-        {containsCode && (
-          <div className="badge">
-            <FaCode /> Code Snippet
-          </div>
-        )}
+        <div className="post-badges">
+          {containsCode && (
+            <span className="badge mr-2">
+              <FaCode /> Code Snippet
+            </span>
+          )}
+          {post.postType === 'PHOTO' && (
+            <span className="badge badge-photo">
+              <FaImage /> Photo
+            </span>
+          )}
+          {post.postType === 'VIDEO' && (
+            <span className="badge badge-video">
+              <FaVideo /> Video
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

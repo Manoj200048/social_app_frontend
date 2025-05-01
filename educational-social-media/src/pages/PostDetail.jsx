@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaArrowLeft, FaThumbsUp, FaThumbsDown, FaComment } from 'react-icons/fa';
+import { FaArrowLeft, FaThumbsUp, FaThumbsDown, FaComment, FaImage, FaVideo } from 'react-icons/fa';
 import api from '../services/api';
 import Navbar from '../components/Navbar';
 import CommentSection from '../components/CommentSection';
@@ -73,6 +73,36 @@ const PostDetail = () => {
     });
   };
 
+  const renderMediaContent = () => {
+    if (!post || !post.contentUrl) return null;
+    
+    if (post.postType === 'PHOTO') {
+      return (
+        <div className="media-content">
+          <img 
+            src={post.contentUrl} 
+            alt="Post" 
+            className="post-media"
+          />
+        </div>
+      );
+    } else if (post.postType === 'VIDEO') {
+      return (
+        <div className="media-content">
+          <video 
+            controls 
+            className="post-media"
+          >
+            <source src={post.contentUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   if (loading) {
     return (
       <div>
@@ -125,9 +155,22 @@ const PostDetail = () => {
                   <span className="text-xs text-muted">Education Enthusiast</span>
                 </div>
               </div>
+              <div className="post-type">
+                {post.postType === 'PHOTO' && (
+                  <span className="badge badge-photo">
+                    <FaImage /> Photo
+                  </span>
+                )}
+                {post.postType === 'VIDEO' && (
+                  <span className="badge badge-video">
+                    <FaVideo /> Video
+                  </span>
+                )}
+              </div>
             </div>
             
             <div className="post-content detailed">
+              {renderMediaContent()}
               {formatContent(post.content)}
             </div>
             
