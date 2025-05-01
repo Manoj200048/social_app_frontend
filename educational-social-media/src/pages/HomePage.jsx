@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { FaImage, FaVideo } from 'react-icons/fa';
 import api from '../services/api';
 import Navbar from '../components/Navbar';
 import CreatePost from '../components/CreatePost';
 import PostCard from '../components/PostCard';
-import { FaGraduationCap, FaBook, FaCode, FaLaptopCode } from 'react-icons/fa';
+import NotificationPanel from '../components/NotificationPanel';
+import { FaGraduationCap, FaBook, FaCode, FaLaptopCode, FaBell } from 'react-icons/fa';
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchPosts = async () => {
     setIsLoading(true);
@@ -22,33 +27,55 @@ const HomePage = () => {
     }
   };
 
+  const fetchNotifications = async () => {
+    try {
+      const response = await api.getNotifications('Guest'); // Replace with actual username
+      setNotifications(response.data);
+      
+      const unread = response.data.filter(n => !n.read).length;
+      setUnreadCount(unread);
+    } catch (err) {
+      console.error('Error fetching notifications', err);
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
+    fetchNotifications();
   }, []);
+
+  const markAsRead = async (notificationId) => {
+    try {
+      await api.markNotificationAsRead(notificationId);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error marking notification as read', err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await api.markAllNotificationsAsRead('Guest'); // Replace with actual username
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error marking all notifications as read', err);
+    }
+  };
 
   const categories = [
     { id: 'all', name: 'All', icon: <FaGraduationCap /> },
-    { id: 'tutorials', name: 'Tutorials', icon: <FaBook /> },
-    { id: 'code', name: 'Code Snippets', icon: <FaCode /> },
-    { id: 'projects', name: 'Projects', icon: <FaLaptopCode /> }
+    { id: 'text', name: 'Text', icon: <FaBook /> },
+    { id: 'photo', name: 'Photos', icon: <FaImage /> },
+    { id: 'video', name: 'Videos', icon: <FaVideo /> },
+    { id: 'code', name: 'Code', icon: <FaCode /> }
   ];
 
   const filteredPosts = posts.filter(post => {
     if (activeCategory === 'all') return true;
     if (activeCategory === 'code') return post.content.includes('```');
-    
-    // For demo purposes, let's use some basic filtering
-    if (activeCategory === 'tutorials') {
-      return post.content.toLowerCase().includes('tutorial') || 
-             post.content.toLowerCase().includes('guide') ||
-             post.content.toLowerCase().includes('how to');
-    }
-    
-    if (activeCategory === 'projects') {
-      return post.content.toLowerCase().includes('project') || 
-             post.content.toLowerCase().includes('challenge');
-    }
-    
+    if (activeCategory === 'text') return post.postType === 'TEXT' && !post.content.includes('```');
+    if (activeCategory === 'photo') return post.postType === 'PHOTO';
+    if (activeCategory === 'video') return post.postType === 'VIDEO';
     return true;
   });
 
@@ -87,14 +114,31 @@ const HomePage = () => {
                 <li className="trending-item">
                   <span className="badge">Machine Learning</span>
                 </li>
-                <li className="trending-item">
-                  <span className="badge">Data Science</span>
-                </li>
               </ul>
             </div>
           </aside>
           
           <div className="feed">
+            <div className="feed-header">
+              <h2 className="feed-title">Latest Posts</h2>
+              <button 
+                className="btn btn-ghost notification-btn"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                <FaBell />
+                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+              </button>
+            </div>
+            
+            {showNotifications && (
+              <NotificationPanel 
+                notifications={notifications}
+                markAsRead={markAsRead}
+                markAllAsRead={markAllAsRead}
+                onClose={() => setShowNotifications(false)}
+              />
+            )}
+            
             <CreatePost refreshPosts={fetchPosts} />
             
             {isLoading ? (
@@ -110,7 +154,7 @@ const HomePage = () => {
             ) : (
               <div className="no-posts">
                 <h3>No posts found</h3>
-                <p>Be the first to share educational content in this category!</p>
+                <p>Be the first to share content in this category!</p>
               </div>
             )}
           </div>
