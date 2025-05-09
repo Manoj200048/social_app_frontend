@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaGraduationCap, FaSearch } from 'react-icons/fa';
+import { FaGraduationCap, FaSearch, FaBell } from 'react-icons/fa';
 
-const Navbar = () => {
+const Navbar = ({ unreadNotifications }) => {
   return (
     <nav className="navbar">
       <div className="container">

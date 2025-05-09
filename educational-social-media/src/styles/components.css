@@ -415,3 +415,73 @@
   .no-posts p {
     color: var(--text-muted);
   }
+
+  /* Additional Media Styles */
+.media-upload-container {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.media-upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.media-preview {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.media-preview-image, 
+.media-preview-video,
+.post-media {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: block;
+  margin: 0 auto 16px;
+}
+
+.post-media {
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.media-content {
+  margin-bottom: 16px;
+}
+
+.badge-photo {
+  background-color: #06b6d4;
+}
+
+.badge-video {
+  background-color: #8b5cf6;
+}
+
+.post-badges {
+  display: flex;
+  gap: 8px;
+}
+
+input[type="file"] {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  width: 100%;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.mr-2 {
+  margin-right: 8px;
+}
