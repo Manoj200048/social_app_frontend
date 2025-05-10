@@ -1,10 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaUsers, FaBook, FaStar, FaLock, FaEdit, FaTrash } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaUsers, FaBook, FaStar, FaLock, FaEdit, FaTrash, FaArrowLeft } from 'react-icons/fa';
 
 const CommunityCard = ({ community, isOwner, onDelete }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="card community-card">
+      {/* Back Button */}
+      <button 
+        onClick={() => navigate('/')} 
+        className="btn btn-ghost back-button"
+      >
+        <FaArrowLeft /> Back to Home
+      </button>
+
       <div className="community-header">
         <div className="flex items-center gap-3">
           {community.avatarUrl ? (

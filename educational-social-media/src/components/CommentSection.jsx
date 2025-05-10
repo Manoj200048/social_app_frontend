@@ -6,9 +6,14 @@ const CommentSection = ({ postId, comments, refreshPost }) => {
   const [newComment, setNewComment] = useState('');
   const [editingComment, setEditingComment] = useState(null);
   const [editContent, setEditContent] = useState('');
+  const [error, setError] = useState('');
+  const [editError, setEditError] = useState('');
 
   const handleAddComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim()) {
+      setError('Comment cannot be empty');
+      return;
+    }
     
     try {
       const comment = {
@@ -18,30 +23,48 @@ const CommentSection = ({ postId, comments, refreshPost }) => {
       
       await api.addComment(postId, comment);
       setNewComment('');
+      setError('');
       if (refreshPost) refreshPost();
     } catch (err) {
-      console.error('Error adding comment', err);
+      if (err.response && err.response.data) {
+        setError(err.response.data.content || 'Invalid comment');
+      } else {
+        setError('Failed to add comment');
+        console.error('Error adding comment', err);
+      }
     }
   };
 
   const handleEditComment = async (commentId) => {
     if (editingComment === commentId) {
+      if (!editContent.trim()) {
+        setEditError('Comment cannot be empty');
+        return;
+      }
+
       try {
         const updatedComment = {
-          user: 'Guest', // This should ideally be the original user
+          user: 'Guest',
           content: editContent
         };
         
         await api.updateComment(postId, commentId, updatedComment);
         setEditingComment(null);
+        setEditError('');
         if (refreshPost) refreshPost();
       } catch (err) {
-        console.error('Error updating comment', err);
+        if (err.response && err.response.data) {
+          setEditError(err.response.data.content || 'Invalid comment');
+        } else {
+          setEditError('Failed to update comment');
+          console.error('Error updating comment', err);
+        }
       }
     } else {
       const comment = comments.find(c => c.id === commentId);
       setEditContent(comment.content);
       setEditingComment(commentId);
+      setEditError('');
     }
   };
 
@@ -62,17 +85,22 @@ const CommentSection = ({ postId, comments, refreshPost }) => {
         <div className="flex items-center gap-2">
           <div className="avatar">G</div>
           <textarea 
-            className="form-control textarea"
+            className={`form-control textarea ${error ? 'border-red-500' : ''}`}
             placeholder="Add a comment..."
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            onChange={(e) => {
+              setNewComment(e.target.value);
+              if (error) setError('');
+            }}
           />
         </div>
+        {error && (
+          <div className="text-red-500 text-sm mt-1">{error}</div>
+        )}
         <div className="comment-actions mt-4">
           <button 
             className="btn btn-primary"
             onClick={handleAddComment}
-            disabled={!newComment.trim()}
           >
             Add Comment
           </button>
@@ -105,13 +133,22 @@ const CommentSection = ({ postId, comments, refreshPost }) => {
               {editingComment === comment.id ? (
                 <div className="form-group">
                   <textarea 
-                    className="form-control textarea"
+                    className={`form-control textarea ${editError ? 'border-red-500' : ''}`}
                     value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
+                    onChange={(e) => {
+                      setEditContent(e.target.value);
+                      if (editError) setEditError('');
+                    }}
                   />
+                  {editError && (
+                    <div className="text-red-500 text-sm mt-1">{editError}</div>
+                  )}
                   <div className="flex gap-2 mt-4">
                     <button className="btn btn-primary" onClick={() => handleEditComment(comment.id)}>Save</button>
-                    <button className="btn btn-ghost" onClick={() => setEditingComment(null)}>Cancel</button>
+                    <button className="btn btn-ghost" onClick={() => {
+                      setEditingComment(null);
+                      setEditError('');
+                    }}>Cancel</button>
                   </div>
                 </div>
               ) : (

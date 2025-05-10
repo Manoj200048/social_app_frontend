@@ -10,6 +10,7 @@ import CommunityDetail from "./pages/CommunityDetail";
 import CreateCommunity from "./pages/CreateCommunity";
 import EditCommunity from "./pages/EditCommunity";
 
+
 function App() {
   return (
     <Router>
@@ -21,6 +22,8 @@ function App() {
         <Route path="/communities/new" element={<CreateCommunity />} />
         <Route path="/communities/:id" element={<CommunityDetail />} />
         <Route path="/communities/:id/edit" element={<EditCommunity />} />
+
+        
       </Routes>
     </Router>
   );
