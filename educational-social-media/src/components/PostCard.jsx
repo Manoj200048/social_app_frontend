@@ -12,42 +12,57 @@ const PostCard = ({ post, refreshPosts }) => {
   
   const containsCode = post.content.includes('```');
   
+  const validateContent = (text) => {
+    if (!text.trim()) return "Content cannot be empty";
+    if (/^[0-9\s]+$/.test(text)) return "Post content cannot be only numbers";
+    if (!/[a-zA-Z]{3,}/.test(text)) return "Content must contain meaningful words";
+    if (text.length < 10) return "Content must be at least 10 characters long";
+    return '';
+  };
+
   const handleLike = async () => {
     try {
       await api.likePost(post.id, post.like);
-      if (refreshPosts) refreshPosts();
+      refreshPosts?.();
     } catch (err) {
-      console.error('Error liking post', err);
+      alert(err.message || 'Failed to like post');
     }
   };
   
   const handleUnlike = async () => {
     try {
       await api.unlikePost(post.id, post.unlike);
-      if (refreshPosts) refreshPosts();
+      refreshPosts?.();
     } catch (err) {
-      console.error('Error unliking post', err);
+      alert(err.message || 'Failed to unlike post');
     }
   };
   
   const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this post?')) return;
     try {
       await api.deletePost(post.id);
-      if (refreshPosts) refreshPosts();
+      refreshPosts?.();
     } catch (err) {
-      console.error('Error deleting post', err);
+      alert(err.message || 'Failed to delete post');
     }
   };
   
   const handleEdit = async () => {
     if (editing) {
+      const error = validateContent(editContent);
+      if (error) {
+        alert(error);
+        return;
+      }
+      
       try {
         const updatedPost = { ...post, content: editContent };
         await api.updatePost(post.id, updatedPost);
-        if (refreshPosts) refreshPosts();
+        refreshPosts?.();
         setEditing(false);
       } catch (err) {
-        console.error('Error updating post', err);
+        alert(err.message || 'Failed to update post');
       }
     } else {
       setEditing(true);
@@ -56,56 +71,37 @@ const PostCard = ({ post, refreshPosts }) => {
   
   const formatContent = (content) => {
     if (!containsCode) return content;
-    
     const parts = content.split('```');
     return parts.map((part, index) => {
-      if (index % 2 === 0) {
-        return <div key={index}>{part}</div>;
-      } else {
-        const language = part.split('\n')[0];
-        const code = part.substring(language.length + 1);
-        return (
-          <SyntaxHighlighter 
-            key={index}
-            language={language || 'javascript'} 
-            style={atomOneDark}
-            className="code-block"
-          >
-            {code}
-          </SyntaxHighlighter>
-        );
-      }
+      if (index % 2 === 0) return <div key={index}>{part}</div>;
+      const language = part.split('\n')[0];
+      const code = part.substring(language.length + 1);
+      return (
+        <SyntaxHighlighter 
+          key={index}
+          language={language || 'javascript'} 
+          style={atomOneDark}
+          className="code-block"
+        >
+          {code}
+        </SyntaxHighlighter>
+      );
     });
   };
 
   const renderMediaContent = () => {
     if (!post.contentUrl) return null;
-    
-    if (post.postType === 'PHOTO') {
-      return (
-        <div className="media-content">
-          <img 
-            src={post.contentUrl} 
-            alt="Post" 
-            className="post-media"
-          />
-        </div>
-      );
-    } else if (post.postType === 'VIDEO') {
-      return (
-        <div className="media-content">
-          <video 
-            controls 
-            className="post-media"
-          >
-            <source src={post.contentUrl} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      );
-    }
-    
-    return null;
+    return post.postType === 'PHOTO' ? (
+      <div className="media-content">
+        <img src={post.contentUrl} alt="Post" className="post-media" />
+      </div>
+    ) : (
+      <div className="media-content">
+        <video controls className="post-media">
+          <source src={post.contentUrl} type="video/mp4" />
+        </video>
+      </div>
+    );
   };
 
   return (
@@ -150,10 +146,7 @@ const PostCard = ({ post, refreshPosts }) => {
               {formatContent(post.content)}
             </div>
             {post.content.length > 300 && !expanded && (
-              <button 
-                className="btn-link"
-                onClick={() => setExpanded(true)}
-              >
+              <button className="btn-link" onClick={() => setExpanded(true)}>
                 Read more
               </button>
             )}
@@ -170,7 +163,7 @@ const PostCard = ({ post, refreshPosts }) => {
             <FaThumbsDown /> <span>{post.unlike}</span>
           </button>
           <Link to={`/post/${post.id}`} className="btn-stat">
-            <FaComment /> <span>{post.comments ? post.comments.length : 0}</span>
+            <FaComment /> <span>{post.comments?.length || 0}</span>
           </Link>
         </div>
         

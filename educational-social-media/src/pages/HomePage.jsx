@@ -74,9 +74,19 @@ const HomePage = () => {
   const filteredPosts = posts.filter(post => {
     if (activeCategory === 'all') return true;
     if (activeCategory === 'code') return post.content.includes('```');
-    if (activeCategory === 'text') return post.postType === 'TEXT' && !post.content.includes('```');
-    if (activeCategory === 'photo') return post.postType === 'PHOTO';
-    if (activeCategory === 'video') return post.postType === 'VIDEO';
+    
+    // For demo purposes, let's use some basic filtering
+    if (activeCategory === 'tutorials') {
+      return post.content.toLowerCase().includes('tutorial') || 
+             post.content.toLowerCase().includes('guide') ||
+             post.content.toLowerCase().includes('how to');
+    }
+    
+    if (activeCategory === 'projects') {
+      return post.content.toLowerCase().includes('project') || 
+             post.content.toLowerCase().includes('challenge');
+    }
+    
     return true;
   });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FaCode, FaTimes, FaImage, FaVideo } from 'react-icons/fa';
 import api from '../services/api';
 
@@ -11,37 +11,83 @@ const CreatePost = ({ refreshPosts }) => {
   const [mediaPreview, setMediaPreview] = useState('');
   const [language, setLanguage] = useState('javascript');
   const [code, setCode] = useState('');
-  
+  const [errors, setErrors] = useState({ content: '', media: '' });
+  const [photoCount, setPhotoCount] = useState(0);
+  const fileInputRef = useRef(null);
+  const MAX_PHOTOS = 3;
+
+  const validateContent = (text) => {
+    if (!text.trim()) return 'Content cannot be empty';
+    if (/^[0-9\s]+$/.test(text)) return "Post content cannot be only numbers";
+    if (!/[a-zA-Z]{3,}/.test(text)) return "Content must contain meaningful words";
+    if (text.length < 10) return "Content must be at least 10 characters long";
+    return '';
+  };
+
+  const validateMedia = async (file) => {
+    if (!file) return '';
+    
+    if (postType === 'PHOTO') {
+      if (!file.type.startsWith('image/')) return "Please upload a valid image file";
+      if (photoCount >= MAX_PHOTOS) return `You can only upload up to ${MAX_PHOTOS} photos`;
+    } 
+    else if (postType === 'VIDEO') {
+      if (!file.type.startsWith('video/')) return "Please upload a valid video file";
+      const duration = await getVideoDuration(file);
+      if (duration > 30) return "Video must be 30 seconds or shorter";
+    }
+    return '';
+  };
+
+  const getVideoDuration = (file) => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(video.src);
+        resolve(video.duration);
+      };
+      video.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    const contentError = validateContent(content);
+    if (contentError && !mediaFile) {
+      setErrors({...errors, content: contentError});
+      alert(contentError);
+      return;
+    }
+    
+    if (mediaFile) {
+      const mediaError = await validateMedia(mediaFile);
+      if (mediaError) {
+        setErrors({...errors, media: mediaError});
+        alert(mediaError);
+        return;
+      }
+    }
+    
     try {
-      let finalContent = content;
-      let contentUrl = '';
-      
-      // Handle media upload if present
-      if (mediaFile && (postType === 'PHOTO' || postType === 'VIDEO')) {
-        // In a real app, you would upload to a storage service and get back a URL
-        // For now, we'll use object URLs for demo purposes only
-        contentUrl = URL.createObjectURL(mediaFile);
-      }
-      
-      // Handle code if present
-      if (showCodeEditor && code.trim()) {
-        finalContent += `\n\n\`\`\`${language}\n${code}\n\`\`\``;
-      }
+      const finalContent = showCodeEditor && code.trim() 
+        ? `${content}\n\n\`\`\`${language}\n${code}\n\`\`\`` 
+        : content;
       
       const post = {
         user: 'Guest',
         content: finalContent,
-        contentUrl: contentUrl,
-        postType: postType,
+        contentUrl: mediaFile ? URL.createObjectURL(mediaFile) : '',
+        postType,
         like: 0,
         unlike: 0,
         comments: []
       };
       
       await api.createPost(post);
+      if (postType === 'PHOTO') setPhotoCount(prev => prev + 1);
+      
       setContent('');
       setCode('');
       setShowCodeEditor(false);
@@ -49,42 +95,38 @@ const CreatePost = ({ refreshPosts }) => {
       setMediaFile(null);
       setMediaPreview('');
       setPostType('TEXT');
+      setErrors({ content: '', media: '' });
+      if (fileInputRef.current) fileInputRef.current.value = '';
       
-      if (refreshPosts) {
-        refreshPosts();
-      }
+      refreshPosts?.();
     } catch (err) {
-      console.error('Error creating post', err);
+      alert(err.message || 'Failed to create post');
     }
   };
-  
-  const handleFileChange = (e) => {
+
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setMediaFile(file);
-      
-      // Create preview URL
-      const objectUrl = URL.createObjectURL(file);
-      setMediaPreview(objectUrl);
-      
-      // Clean up the preview URL when component unmounts
-      return () => URL.revokeObjectURL(objectUrl);
+    if (!file) return;
+    
+    const error = await validateMedia(file);
+    if (error) {
+      alert(error);
+      return;
     }
+    
+    setMediaFile(file);
+    setMediaPreview(URL.createObjectURL(file));
   };
-  
+
   const clearMediaSelection = () => {
-    if (mediaPreview) {
-      URL.revokeObjectURL(mediaPreview);
-    }
+    if (mediaPreview) URL.revokeObjectURL(mediaPreview);
     setMediaFile(null);
     setMediaPreview('');
     setShowMediaUpload(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
-  
-  const languages = [
-    'javascript', 'python', 'java', 'cpp', 'csharp', 
-    'html', 'css', 'php', 'ruby', 'go', 'typescript'
-  ];
+
+  const languages = ['javascript', 'python', 'java', 'cpp', 'csharp', 'html', 'css', 'php', 'ruby', 'go', 'typescript'];
 
   return (
     <div className="card create-post">
@@ -92,12 +134,16 @@ const CreatePost = ({ refreshPosts }) => {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <textarea 
-            className="form-control textarea"
+            className={`form-control textarea ${errors.content ? 'is-invalid' : ''}`}
             placeholder="Share educational content, ask questions, or post code snippets..."
             value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required={!mediaFile} // Either content or media should be present
+            onChange={(e) => {
+              setContent(e.target.value);
+              setErrors({...errors, content: validateContent(e.target.value)});
+            }}
+            required={!mediaFile}
           />
+          {errors.content && <div className="invalid-feedback">{errors.content}</div>}
         </div>
         
         {showMediaUpload && (
@@ -107,16 +153,13 @@ const CreatePost = ({ refreshPosts }) => {
                 {postType === 'PHOTO' ? <FaImage /> : <FaVideo />}
                 <span>Upload {postType.toLowerCase()}</span>
               </div>
-              <button 
-                type="button" 
-                className="btn-icon"
-                onClick={clearMediaSelection}
-              >
+              <button type="button" className="btn-icon" onClick={clearMediaSelection}>
                 <FaTimes />
               </button>
             </div>
             <input 
               type="file" 
+              ref={fileInputRef}
               accept={postType === 'PHOTO' ? 'image/*' : 'video/*'}
               onChange={handleFileChange}
               className="form-control"
@@ -124,19 +167,15 @@ const CreatePost = ({ refreshPosts }) => {
             {mediaPreview && (
               <div className="media-preview">
                 {postType === 'PHOTO' ? (
-                  <img 
-                    src={mediaPreview} 
-                    alt="Preview" 
-                    className="media-preview-image"
-                  />
+                  <img src={mediaPreview} alt="Preview" className="media-preview-image" />
                 ) : (
                   <video controls className="media-preview-video">
                     <source src={mediaPreview} type={mediaFile?.type} />
-                    Your browser does not support the video tag.
                   </video>
                 )}
               </div>
             )}
+            {errors.media && <div className="alert alert-danger mt-2">{errors.media}</div>}
           </div>
         )}
         
@@ -151,9 +190,7 @@ const CreatePost = ({ refreshPosts }) => {
                   onChange={(e) => setLanguage(e.target.value)}
                 >
                   {languages.map(lang => (
-                    <option key={lang} value={lang}>
-                      {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                    </option>
+                    <option key={lang} value={lang}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</option>
                   ))}
                 </select>
               </div>
