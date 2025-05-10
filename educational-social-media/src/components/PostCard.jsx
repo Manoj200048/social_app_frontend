@@ -9,6 +9,9 @@ const PostCard = ({ post, refreshPosts }) => {
   const [expanded, setExpanded] = React.useState(false);
   const [editing, setEditing] = React.useState(false);
   const [editContent, setEditContent] = React.useState(post.content);
+  const [editMedia, setEditMedia] = React.useState(post.contentUrl);
+  const [editMediaType, setEditMediaType] = React.useState(post.postType);
+  const [mediaFile, setMediaFile] = React.useState(null);
   
   const containsCode = post.content.includes('```');
   
@@ -57,18 +60,56 @@ const PostCard = ({ post, refreshPosts }) => {
       }
       
       try {
-        const updatedPost = { ...post, content: editContent };
+        const updatedPost = { 
+          ...post, 
+          content: editContent,
+          postType: editMediaType
+        };
+  
+        // Include media file if a new one was selected
+        if (mediaFile) {
+          updatedPost.mediaFile = mediaFile;
+        }
+        // Explicitly mark media for removal if it was removed
+        else if (post.contentUrl && !editMedia) {
+          updatedPost.contentUrl = null;
+        }
+        // Keep existing media if no changes
+        else if (editMedia) {
+          updatedPost.contentUrl = editMedia;
+        }
+  
         await api.updatePost(post.id, updatedPost);
         refreshPosts?.();
         setEditing(false);
+        setMediaFile(null);
       } catch (err) {
-        alert(err.message || 'Failed to update post');
+        console.error('Update error:', err);
+        alert(err.response?.data?.message || 'Failed to update post');
       }
     } else {
       setEditing(true);
+      setEditContent(post.content);
+      setEditMedia(post.contentUrl);
+      setEditMediaType(post.postType);
+      setMediaFile(null);
     }
   };
-  
+
+  const handleMediaChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setMediaFile(file);
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setEditMedia(event.target.result);
+      setEditMediaType(file.type.startsWith('image') ? 'PHOTO' : 'VIDEO');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const formatContent = (content) => {
     if (!containsCode) return content;
     const parts = content.split('```');
@@ -89,16 +130,16 @@ const PostCard = ({ post, refreshPosts }) => {
     });
   };
 
-  const renderMediaContent = () => {
-    if (!post.contentUrl) return null;
-    return post.postType === 'PHOTO' ? (
+  const renderMediaContent = (mediaUrl, mediaType) => {
+    if (!mediaUrl) return null;
+    return mediaType === 'PHOTO' ? (
       <div className="media-content">
-        <img src={post.contentUrl} alt="Post" className="post-media" />
+        <img src={mediaUrl} alt="Post" className="post-media" />
       </div>
     ) : (
       <div className="media-content">
         <video controls className="post-media">
-          <source src={post.contentUrl} type="video/mp4" />
+          <source src={mediaUrl} type="video/mp4" />
         </video>
       </div>
     );
@@ -134,6 +175,32 @@ const PostCard = ({ post, refreshPosts }) => {
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
             />
+            
+            {editMedia && renderMediaContent(editMedia, editMediaType)}
+            
+            <div className="mt-3">
+              <label className="btn btn-secondary">
+                {editMedia ? 'Change Media' : 'Add Media'}
+                <input 
+                  type="file" 
+                  accept="image/*,video/*" 
+                  onChange={handleMediaChange}
+                  className="hidden"
+                />
+              </label>
+              {editMedia && (
+                <button 
+                  className="btn btn-ghost ml-2"
+                  onClick={() => {
+                    setEditMedia(null);
+                    setEditMediaType('TEXT');
+                  }}
+                >
+                  Remove Media
+                </button>
+              )}
+            </div>
+            
             <div className="flex gap-2 mt-4">
               <button className="btn btn-primary" onClick={handleEdit}>Save</button>
               <button className="btn btn-ghost" onClick={() => setEditing(false)}>Cancel</button>
@@ -141,7 +208,7 @@ const PostCard = ({ post, refreshPosts }) => {
           </div>
         ) : (
           <>
-            {renderMediaContent()}
+            {renderMediaContent(post.contentUrl, post.postType)}
             <div className={`content ${expanded ? 'expanded' : ''}`}>
               {formatContent(post.content)}
             </div>
