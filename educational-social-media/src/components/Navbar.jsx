@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaGraduationCap, FaSearch, FaBell } from 'react-icons/fa';
+import { FaGraduationCap, FaSearch, FaBell, FaBook, FaUsers } from 'react-icons/fa';
 
-const Navbar = ({ unreadNotifications }) => {
+const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="container">
@@ -11,6 +11,17 @@ const Navbar = ({ unreadNotifications }) => {
             <FaGraduationCap className="brand-icon" />
             <span>EduSocial</span>
           </Link>
+          
+          <div className="nav-links">
+            <Link to="/plans" className="nav-link">
+              <FaBook className="nav-icon" />
+              <span>Learning Plans</span>
+            </Link>
+            <Link to="/communities" className="nav-link">
+              <FaUsers className="nav-icon" />
+              <span>Communities</span>
+            </Link>
+          </div>
           
           <div className="search-bar">
             <FaSearch className="search-icon" />
