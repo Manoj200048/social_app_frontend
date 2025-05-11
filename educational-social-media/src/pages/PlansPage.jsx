@@ -40,7 +40,31 @@ const PlansPage = () => {
     }
   };
 
-  return <div></div>;
+  const handleCreate = () => {
+    setCurrentPlan({
+      topic: "",
+      resources: [""],
+      timeline: 30,
+      description: "",
+      steps: [""],
+      user: { id: userId },
+    });
+    setIsModalOpen(true);
+  };
+
+  return (
+    <div className="plans-container">
+      <div className="plans-header">
+        <h1>Learning Plans</h1>
+        {userId && (
+          <button className="btn btn-primary" onClick={handleCreate}>
+            Create New Plan
+          </button>
+        )}
+      </div>
+      
+    </div>
+  );
 };
 
 export default PlansPage;
