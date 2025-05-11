@@ -194,3 +194,48 @@ textarea.form-control {
   min-height: 100px;
   resize: vertical;
 }
+
+/* List Items */
+.resources-list,
+.steps-list {
+  margin-top: 0.5rem;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.list-item input {
+  flex-grow: 1;
+  margin-right: 0.5rem;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.list-item input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.add-item-btn {
+  margin-top: 0.5rem;
+}
+
+.remove-item-btn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  margin-left: 0.5rem;
+  font-size: 1.25rem;
+  transition: color 0.2s ease;
+}
+
+.remove-item-btn:hover {
+  color: var(--danger-hover);
+}
