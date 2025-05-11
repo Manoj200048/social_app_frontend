@@ -51,3 +51,13 @@ export const updatePlan = async (id, planData) => {
     throw error;
   }
 };
+
+export const deletePlan = async (id) => {
+  try {
+    const response = await apiClient.delete(`/learning-plans/${id}`);
+    return response;
+  } catch (error) {
+    console.error(`Error deleting plan with ID ${id}:`, error);
+    throw error;
+  }
+};
