@@ -73,6 +73,39 @@ const PlansPage = () => {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (currentPlan.id) {
+        await updatePlan(currentPlan.id, currentPlan);
+      } else {
+        await createPlan(currentPlan);
+      }
+      setIsModalOpen(false);
+      fetchPlans();
+    } catch (err) {
+      console.error("Failed to save plan:", err);
+      setError("Failed to save plan. Please try again.");
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentPlan({ ...currentPlan, [name]: value });
+  };
+
+  const handleResourceChange = (index, value) => {
+    const newResources = [...currentPlan.resources];
+    newResources[index] = value;
+    setCurrentPlan({ ...currentPlan, resources: newResources });
+  };
+
+  const handleStepChange = (index, value) => {
+    const newSteps = [...currentPlan.steps];
+    newSteps[index] = value;
+    setCurrentPlan({ ...currentPlan, steps: newSteps });
+  };
+
   if (isLoading) {
     return <div className="empty-state">Loading plans...</div>;
   }
@@ -127,6 +160,93 @@ const PlansPage = () => {
           ))}
         </div>
       )}
+
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+        className="modal-content"
+        overlayClassName="modal-overlay"
+      >
+        <div className="modal-header">
+          <h2>{currentPlan?.id ? "Edit Plan" : "Create New Plan"}</h2>
+          <button className="close-btn" onClick={() => setIsModalOpen(false)}>
+            &times;
+          </button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="topic">Topic</label>
+            <input
+              type="text"
+              id="topic"
+              name="topic"
+              className="form-control"
+              value={currentPlan?.topic || ""}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              className="form-control"
+              rows="3"
+              value={currentPlan?.description || ""}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="timeline">Timeline (minutes)</label>
+            <input
+              type="number"
+              id="timeline"
+              name="timeline"
+              className="form-control"
+              min="1"
+              value={currentPlan?.timeline || 30}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Resources</label>
+            <div className="resources-list">
+              {currentPlan?.resources.map((resource, index) => (
+                <div key={index} className="list-item">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={resource}
+                    onChange={(e) =>
+                      handleResourceChange(index, e.target.value)
+                    }
+                    required
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              {currentPlan?.id ? "Update Plan" : "Create Plan"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
