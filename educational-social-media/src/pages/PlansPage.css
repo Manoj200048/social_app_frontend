@@ -260,3 +260,14 @@ textarea.form-control {
 .empty-state p {
   margin-bottom: 1.5rem;
 }
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+}
