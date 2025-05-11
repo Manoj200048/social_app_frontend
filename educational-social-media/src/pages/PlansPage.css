@@ -239,3 +239,10 @@ textarea.form-control {
 .remove-item-btn:hover {
   color: var(--danger-hover);
 }
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
