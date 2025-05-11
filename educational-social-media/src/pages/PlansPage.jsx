@@ -245,7 +245,28 @@ const PlansPage = () => {
           <div className="form-group">
             <label>Resources</label>
             <div className="resources-list">
-       
+              {currentPlan?.resources.map((resource, index) => (
+                <div key={index} className="list-item">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={resource}
+                    onChange={(e) =>
+                      handleResourceChange(index, e.target.value)
+                    }
+                    required
+                  />
+                  {currentPlan.resources.length > 1 && (
+                    <button
+                      type="button"
+                      className="remove-item-btn"
+                      onClick={() => removeResource(index)}
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
             <button
               type="button"
