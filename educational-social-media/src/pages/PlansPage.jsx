@@ -73,30 +73,6 @@ const PlansPage = () => {
     }
   };
 
-  const addResource = () => {
-    setCurrentPlan({
-      ...currentPlan,
-      resources: [...currentPlan.resources, ""],
-    });
-  };
-
-  const addStep = () => {
-    setCurrentPlan({
-      ...currentPlan,
-      steps: [...currentPlan.steps, ""],
-    });
-  };
-
-  const removeResource = (index) => {
-    const newResources = currentPlan.resources.filter((_, i) => i !== index);
-    setCurrentPlan({ ...currentPlan, resources: newResources });
-  };
-
-  const removeStep = (index) => {
-    const newSteps = currentPlan.steps.filter((_, i) => i !== index);
-    setCurrentPlan({ ...currentPlan, steps: newSteps });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -130,8 +106,36 @@ const PlansPage = () => {
     setCurrentPlan({ ...currentPlan, steps: newSteps });
   };
 
+  const addResource = () => {
+    setCurrentPlan({
+      ...currentPlan,
+      resources: [...currentPlan.resources, ""],
+    });
+  };
+
+  const addStep = () => {
+    setCurrentPlan({
+      ...currentPlan,
+      steps: [...currentPlan.steps, ""],
+    });
+  };
+
+  const removeResource = (index) => {
+    const newResources = currentPlan.resources.filter((_, i) => i !== index);
+    setCurrentPlan({ ...currentPlan, resources: newResources });
+  };
+
+  const removeStep = (index) => {
+    const newSteps = currentPlan.steps.filter((_, i) => i !== index);
+    setCurrentPlan({ ...currentPlan, steps: newSteps });
+  };
+
   if (isLoading) {
     return <div className="empty-state">Loading plans...</div>;
+  }
+
+  if (error) {
+    return <div className="empty-state">{error}</div>;
   }
 
   return (
@@ -241,20 +245,48 @@ const PlansPage = () => {
           <div className="form-group">
             <label>Resources</label>
             <div className="resources-list">
-              {currentPlan?.resources.map((resource, index) => (
+       
+            </div>
+            <button
+              type="button"
+              className="btn btn-secondary add-item-btn"
+              onClick={addResource}
+            >
+              Add Resource
+            </button>
+          </div>
+
+          <div className="form-group">
+            <label>Steps</label>
+            <div className="steps-list">
+              {currentPlan?.steps.map((step, index) => (
                 <div key={index} className="list-item">
                   <input
                     type="text"
                     className="form-control"
-                    value={resource}
-                    onChange={(e) =>
-                      handleResourceChange(index, e.target.value)
-                    }
+                    value={step}
+                    onChange={(e) => handleStepChange(index, e.target.value)}
                     required
                   />
+                  {currentPlan.steps.length > 1 && (
+                    <button
+                      type="button"
+                      className="remove-item-btn"
+                      onClick={() => removeStep(index)}
+                    >
+                      &times;
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
+            <button
+              type="button"
+              className="btn btn-secondary add-item-btn"
+              onClick={addStep}
+            >
+              Add Step
+            </button>
           </div>
 
           <div className="modal-actions">
