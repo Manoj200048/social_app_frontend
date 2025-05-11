@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import PostDetail from "./pages/PostDetail";
 import "./styles/global.css";
 import "./styles/components.css";
+import PlansPage from "./pages/PlansPage";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/post/:id" element={<PostDetail />} />
+        <Route path="/plans" element={<PlansPage />} />
       </Routes>
     </Router>
   );
