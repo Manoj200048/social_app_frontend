@@ -1,9 +1,9 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import PostDetail from './pages/PostDetail';
-import './styles/global.css';
-import './styles/components.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import PostDetail from "./pages/PostDetail";
+import "./styles/global.css";
+import "./styles/components.css";
 
 function App() {
   return (
