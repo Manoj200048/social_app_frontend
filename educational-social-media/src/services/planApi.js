@@ -20,3 +20,13 @@ export const getPlanById = async (id) => {
     throw error;
   }
 };
+
+export const getPlansByUserId = async (userId) => {
+  try {
+    const response = await apiClient.get(`/learning-plans/user/${userId}`);
+    return response;
+  } catch (error) {
+    console.error(`Error fetching plans for user ID ${userId}:`, error);
+    throw error;
+  }
+};
