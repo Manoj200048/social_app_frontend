@@ -52,6 +52,10 @@ const PlansPage = () => {
     setIsModalOpen(true);
   };
 
+  if (isLoading) {
+    return <div className="empty-state">Loading plans...</div>;
+  }
+
   return (
     <div className="plans-container">
       <div className="plans-header">
@@ -62,7 +66,6 @@ const PlansPage = () => {
           </button>
         )}
       </div>
-      
     </div>
   );
 };
