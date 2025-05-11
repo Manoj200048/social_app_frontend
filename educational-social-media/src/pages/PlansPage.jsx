@@ -73,6 +73,30 @@ const PlansPage = () => {
     }
   };
 
+  const addResource = () => {
+    setCurrentPlan({
+      ...currentPlan,
+      resources: [...currentPlan.resources, ""],
+    });
+  };
+
+  const addStep = () => {
+    setCurrentPlan({
+      ...currentPlan,
+      steps: [...currentPlan.steps, ""],
+    });
+  };
+
+  const removeResource = (index) => {
+    const newResources = currentPlan.resources.filter((_, i) => i !== index);
+    setCurrentPlan({ ...currentPlan, resources: newResources });
+  };
+
+  const removeStep = (index) => {
+    const newSteps = currentPlan.steps.filter((_, i) => i !== index);
+    setCurrentPlan({ ...currentPlan, steps: newSteps });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
