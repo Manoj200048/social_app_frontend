@@ -41,3 +41,13 @@ export const createPlan = async (planData) => {
     throw error;
   }
 };
+
+export const updatePlan = async (id, planData) => {
+  try {
+    const response = await apiClient.put(`/learning-plans/${id}`, planData);
+    return response;
+  } catch (error) {
+    console.error(`Error updating plan with ID ${id}:`, error);
+    throw error;
+  }
+};
