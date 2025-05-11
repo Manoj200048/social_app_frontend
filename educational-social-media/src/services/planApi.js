@@ -10,3 +10,13 @@ export const getAllPlans = async () => {
     throw error;
   }
 };
+
+export const getPlanById = async (id) => {
+  try {
+    const response = await apiClient.get(`/learning-plans/${id}`);
+    return response;
+  } catch (error) {
+    console.error(`Error fetching plan with ID ${id}:`, error);
+    throw error;
+  }
+};
