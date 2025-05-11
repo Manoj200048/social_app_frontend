@@ -30,3 +30,14 @@ export const getPlansByUserId = async (userId) => {
     throw error;
   }
 };
+
+
+export const createPlan = async (planData) => {
+  try {
+    const response = await apiClient.post("/learning-plans", planData);
+    return response;
+  } catch (error) {
+    console.error("Error creating plan:", error);
+    throw error;
+  }
+};
