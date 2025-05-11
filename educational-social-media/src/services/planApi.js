@@ -61,3 +61,14 @@ export const deletePlan = async (id) => {
     throw error;
   }
 };
+
+// Users
+export const createUser = async (userData) => {
+  try {
+    const response = await apiClient.post("/users", userData);
+    return response;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
